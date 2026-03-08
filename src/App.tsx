@@ -14,14 +14,21 @@ export default function App() {
   const handleGenerateNew = async () => {
     setIsGenerating(true);
     try {
+      const response = await fetch("/api/generate-report", {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to generate report");
+      }
+      const data = await response.json();
+      
       const today = new Date();
       const dateString = format(today, "yyyy-MM-dd");
-      const content = await generateDailyReport(dateString);
-
+      
       const newReport: Report = {
         id: dateString,
         date: today.toISOString(),
-        content,
+        content: data.content,
         createdAt: today.getTime(),
       };
 
@@ -29,9 +36,11 @@ export default function App() {
       const updatedReports = getReports();
       setReports(updatedReports);
       setSelectedId(newReport.id);
+      
+      alert("레포트가 생성되어 카카오톡으로 전송되었습니다.");
     } catch (error) {
       console.error("Failed to generate report:", error);
-      alert("레포트 생성에 실패했습니다. API 키나 네트워크 상태를 확인해주세요.");
+      alert("레포트 생성에 실패했습니다.");
     } finally {
       setIsGenerating(false);
     }
